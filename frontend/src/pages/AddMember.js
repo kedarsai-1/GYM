@@ -21,9 +21,12 @@ function AddMember() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrIndex, setQrIndex] = useState(0);
   const uploadsBaseUrl = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api").replace("/api", "");
+  const upiId = process.env.REACT_APP_UPI_ID || "9676000706@ibl";
+  const upiPayLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("United Gym")}&cu=INR`;
+  const generatedQrUrl = `https://quickchart.io/qr?size=420&text=${encodeURIComponent(upiPayLink)}`;
   const qrCandidates = [
     process.env.REACT_APP_UPI_QR_URL,
-    `${uploadsBaseUrl}/uploads/members/${encodeURIComponent("WhatsApp Image 2026-03-31 at 18.17.30.jpeg")}`,
+    generatedQrUrl,
     `${uploadsBaseUrl}/uploads/qr/gym_qr.png`,
   ].filter(Boolean);
 
@@ -176,6 +179,9 @@ function AddMember() {
                 />
                 <p className="mt-3 text-center text-xs text-slate-500">
                   After payment, upload the UPI screenshot and continue.
+                </p>
+                <p className="mt-1 text-center text-xs font-medium text-slate-600">
+                  UPI ID: {upiId}
                 </p>
               </motion.div>
             </div>
