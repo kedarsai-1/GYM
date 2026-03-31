@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../services/api";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { pageAnimation, popAnimation } from "../animations/pageAnimations";
 
 const goalOptions = [
@@ -18,7 +18,11 @@ function AddMember() {
   const [form, setForm] = useState({});
   const [paymentType, setPaymentType] = useState("Cash");
   const [error, setError] = useState("");
+  const [showQrModal, setShowQrModal] = useState(false);
   const uploadsBaseUrl = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api").replace("/api", "");
+  const qrImageUrl =
+    process.env.REACT_APP_UPI_QR_URL ||
+    `${uploadsBaseUrl}/uploads/members/WhatsApp%20Image%202026-03-31%20at%2018.17.30.jpeg`;
 
   const handleChange = (e) => {
     if (e.target.name === "age" && Number(e.target.value) < 0) {
@@ -107,7 +111,13 @@ function AddMember() {
 
           {paymentType === "UPI" && (
             <>
-              <img src={`${uploadsBaseUrl}/uploads/qr/gym_qr.png`} width="200" alt="QR" className="mt-3 rounded-lg border border-slate-200"/>
+              <button
+                type="button"
+                onClick={() => setShowQrModal(true)}
+                className="mt-3 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+              >
+                View UPI QR
+              </button>
               <input type="file" name="upiScreenshot" onChange={handleFile} className="mt-2 block text-sm"/>
             </>
           )}
@@ -122,6 +132,47 @@ function AddMember() {
           </motion.div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showQrModal && (
+          <motion.div
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="absolute inset-0 bg-black/60" onClick={() => setShowQrModal(false)} />
+            <div className="relative flex min-h-screen items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 220, damping: 22 }}
+                className="w-full max-w-sm rounded-2xl border border-orange-200 bg-white p-5 shadow-2xl"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">Scan to Pay</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrModal(false)}
+                    className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200"
+                  >
+                    Close
+                  </button>
+                </div>
+                <img
+                  src={qrImageUrl}
+                  alt="UPI QR"
+                  className="h-auto w-full rounded-xl border border-slate-200 object-contain"
+                />
+                <p className="mt-3 text-center text-xs text-slate-500">
+                  After payment, upload the UPI screenshot and continue.
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

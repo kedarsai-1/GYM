@@ -5,11 +5,26 @@ const connectDB = require("./config/db");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const allowedOrigins = (process.env.CORS_ORIGIN ||
+  "http://localhost:3000,https://spiffy-puffpuff-3a0f5d.netlify.app")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 connectDB();
 
 app.use(express.json());
-app.use(cors({origin: "http://localhost:3000" || "https://spiffy-puffpuff-3a0f5d.netlify.app" }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow server-to-server tools and same-origin requests with no origin header
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/admin", require("./routes/adminRoutes"));
