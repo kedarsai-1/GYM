@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5001;
 connectDB();
 
 app.use(express.json());
-app.use(cors({origin: "http://localhost:3000" || process.env.REACT_APP_API_BASE_URL}));
+app.use(cors({origin: "http://localhost:3000" || "https://spiffy-puffpuff-3a0f5d.netlify.app" }));
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/admin", require("./routes/adminRoutes"));
