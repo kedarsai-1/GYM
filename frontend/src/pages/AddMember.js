@@ -19,10 +19,13 @@ function AddMember() {
   const [paymentType, setPaymentType] = useState("Cash");
   const [error, setError] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
+  const [qrIndex, setQrIndex] = useState(0);
   const uploadsBaseUrl = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api").replace("/api", "");
-  const qrImageUrl =
-    process.env.REACT_APP_UPI_QR_URL ||
-    `${uploadsBaseUrl}/uploads/members/WhatsApp%20Image%202026-03-31%20at%2018.17.30.jpeg`;
+  const qrCandidates = [
+    process.env.REACT_APP_UPI_QR_URL,
+    `${uploadsBaseUrl}/uploads/members/${encodeURIComponent("WhatsApp Image 2026-03-31 at 18.17.30.jpeg")}`,
+    `${uploadsBaseUrl}/uploads/qr/gym_qr.png`,
+  ].filter(Boolean);
 
   const handleChange = (e) => {
     if (e.target.name === "age" && Number(e.target.value) < 0) {
@@ -113,7 +116,10 @@ function AddMember() {
             <>
               <button
                 type="button"
-                onClick={() => setShowQrModal(true)}
+                onClick={() => {
+                  setQrIndex(0);
+                  setShowQrModal(true);
+                }}
                 className="mt-3 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
               >
                 View UPI QR
@@ -161,8 +167,11 @@ function AddMember() {
                   </button>
                 </div>
                 <img
-                  src={qrImageUrl}
+                  src={qrCandidates[qrIndex]}
                   alt="UPI QR"
+                  onError={() =>
+                    setQrIndex((prev) => Math.min(prev + 1, qrCandidates.length - 1))
+                  }
                   className="h-auto w-full rounded-xl border border-slate-200 object-contain"
                 />
                 <p className="mt-3 text-center text-xs text-slate-500">
