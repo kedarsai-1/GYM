@@ -15,7 +15,7 @@ function Members() {
   const navigate = useNavigate();
   const location = useLocation();
   const formatDate = (value) => (value ? new Date(value).toDateString() : "-");
-  const apiBase = process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api";
+  const apiBase = process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api";
   const uploadsBase = apiBase.replace("/api", "");
   const pageSize = 8;
   const filter = new URLSearchParams(location.search).get("filter");

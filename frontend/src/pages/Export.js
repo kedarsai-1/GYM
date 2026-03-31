@@ -9,7 +9,7 @@ function Export() {
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState("");
   const [search, setSearch] = useState("");
-  const apiBase = process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api";
+  const apiBase = process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api";
 
   useEffect(() => {
     API.get("/members/all").then((res) => setMembers(res.data || []));

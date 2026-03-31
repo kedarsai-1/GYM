@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import API from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { pageAnimation, popAnimation } from "../animations/pageAnimations";
+import { QRCodeSVG } from "qrcode.react";
 
 const goalOptions = [
   "Weight Loss",
@@ -19,16 +20,15 @@ function AddMember() {
   const [paymentType, setPaymentType] = useState("Cash");
   const [error, setError] = useState("");
   const [showQrModal, setShowQrModal] = useState(false);
-  const [qrIndex, setQrIndex] = useState(0);
-  const uploadsBaseUrl = (process.env.REACT_APP_API_BASE_URL || "http://localhost:5001/api").replace("/api", "");
+  const [useGeneratedQr, setUseGeneratedQr] = useState(false);
+  const uploadsBaseUrl = (
+    process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api"
+  ).replace("/api", "");
   const upiId = process.env.REACT_APP_UPI_ID || "9676000706@ibl";
   const upiPayLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("United Gym")}&cu=INR`;
-  const generatedQrUrl = `https://quickchart.io/qr?size=420&text=${encodeURIComponent(upiPayLink)}`;
-  const qrCandidates = [
-    process.env.REACT_APP_UPI_QR_URL,
-    generatedQrUrl,
-    `${uploadsBaseUrl}/uploads/qr/gym_qr.png`,
-  ].filter(Boolean);
+  const externalQrUrl =
+    process.env.REACT_APP_UPI_QR_URL ||
+    `${uploadsBaseUrl}/uploads/members/${encodeURIComponent("WhatsApp Image 2026-03-31 at 18.17.30.jpeg")}`;
 
   const handleChange = (e) => {
     if (e.target.name === "age" && Number(e.target.value) < 0) {
@@ -120,7 +120,7 @@ function AddMember() {
               <button
                 type="button"
                 onClick={() => {
-                  setQrIndex(0);
+                  setUseGeneratedQr(false);
                   setShowQrModal(true);
                 }}
                 className="mt-3 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
@@ -169,14 +169,18 @@ function AddMember() {
                     Close
                   </button>
                 </div>
-                <img
-                  src={qrCandidates[qrIndex]}
-                  alt="UPI QR"
-                  onError={() =>
-                    setQrIndex((prev) => Math.min(prev + 1, qrCandidates.length - 1))
-                  }
-                  className="h-auto w-full rounded-xl border border-slate-200 object-contain"
-                />
+                {!useGeneratedQr ? (
+                  <img
+                    src={externalQrUrl}
+                    alt="UPI QR"
+                    onError={() => setUseGeneratedQr(true)}
+                    className="h-auto w-full rounded-xl border border-slate-200 object-contain"
+                  />
+                ) : (
+                  <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-3">
+                    <QRCodeSVG value={upiPayLink} size={280} />
+                  </div>
+                )}
                 <p className="mt-3 text-center text-xs text-slate-500">
                   After payment, upload the UPI screenshot and continue.
                 </p>
