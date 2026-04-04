@@ -11,13 +11,10 @@ const allowedOrigins = (process.env.CORS_ORIGIN ||
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-connectDB();
-
 app.use(express.json());
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow server-to-server tools and same-origin requests with no origin header
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
@@ -31,6 +28,14 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/members", require("./routes/memberRoutes"));
 app.use("/api/export", require("./routes/exportRoutes"));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+async function start() {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
