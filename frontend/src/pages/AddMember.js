@@ -6,6 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { pageAnimation, popAnimation } from "../animations/pageAnimations";
 import { QRCodeSVG } from "qrcode.react";
 import {
+  FaUser,
+  FaCamera,
+  FaHeartbeat,
+  FaIdCard,
+  FaCalendarAlt,
+  FaClock,
+  FaMoneyBillWave,
+  FaPen,
+} from "react-icons/fa";
+import {
   WORKOUT_TYPES,
   MEMBER_CATEGORIES,
   timeStringToFraction,
@@ -20,6 +30,36 @@ const goalOptions = [
   "General Fitness",
   "Endurance",
 ];
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100";
+
+function Field({ label, hint, children, className = "" }) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-sm font-medium text-slate-800">{label}</label>
+      {hint ? <p className="mb-2 text-xs leading-relaxed text-slate-500">{hint}</p> : null}
+      {children}
+    </div>
+  );
+}
+
+function SectionCard({ icon: Icon, title, subtitle, children }) {
+  return (
+    <section className="rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/90 p-5 shadow-sm ring-1 ring-slate-100/80 sm:p-6">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-md shadow-orange-600/25">
+          <Icon className="h-5 w-5" aria-hidden />
+        </span>
+        <div>
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h3>
+          <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 function AddMember() {
   const [form, setForm] = useState({});
@@ -83,16 +123,16 @@ function AddMember() {
     try {
       await API.post("/members/add", data);
       setError("");
-      alert("Member Added");
+      alert("Member added successfully.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add member");
+      setError(err.response?.data?.message || "Could not save. Please try again.");
     }
   };
 
   const digitalPayment = paymentType === "UPI" || paymentType === "PhonePe";
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-orange-50/40 to-slate-100">
       <Sidebar />
       <div className="flex-1">
         <Navbar />
@@ -101,125 +141,261 @@ function AddMember() {
           variants={pageAnimation}
           initial="hidden"
           animate="show"
-          className="min-h-screen p-6"
+          className="min-h-screen p-4 pb-16 sm:p-6 lg:p-8"
         >
-          <motion.div variants={popAnimation} className="max-w-3xl rounded-2xl border border-orange-200/60 bg-white/95 p-6 shadow-xl backdrop-blur">
-          <h2 className="mb-1 text-2xl font-semibold text-slate-900">Add Member</h2>
-          <p className="mb-4 text-sm text-slate-500">Create a new fitness profile with payment setup (fields align with Gym Client Details).</p>
+          <motion.div variants={popAnimation} className="mx-auto max-w-4xl">
+            <header className="mb-8 text-center sm:text-left">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                Add a new member
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                Fill in the details below step by step. Only name and phone are essential to get
+                started — everything else helps us serve them better.
+              </p>
+            </header>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <input name="name" placeholder="Name" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="phone" placeholder="Mobile" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="age" type="number" min="0" placeholder="Age" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <select name="gender" onChange={handleChange} className="rounded-lg border border-slate-300 p-2">
-              <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-            <input name="address" placeholder="Address" onChange={handleChange} className="rounded-lg border border-slate-300 p-2 md:col-span-2"/>
+            <div className="space-y-8">
+              <SectionCard
+                icon={FaUser}
+                title="Who is joining?"
+                subtitle="Basic contact details we use to reach them."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Full name" hint="As they want it on records.">
+                    <input name="name" placeholder="e.g. Ramesh Kumar" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Mobile number" hint="WhatsApp or call — we’ll use this for updates.">
+                    <input name="phone" type="tel" inputMode="numeric" placeholder="10-digit number" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Age">
+                    <input name="age" type="number" min="0" placeholder="Years" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Gender">
+                    <select name="gender" onChange={handleChange} className={inputClass}>
+                      <option value="">Choose one</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </Field>
+                  <Field label="Address" hint="Area or landmark — helps for local members." className="sm:col-span-2">
+                    <input name="address" placeholder="House / street / area" onChange={handleChange} className={inputClass} />
+                  </Field>
+                </div>
+              </SectionCard>
 
-            <input name="joiningWeight" type="number" min="0" step="0.1" placeholder="Joining weight (kg)" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input type="date" name="joiningWeightDate" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="updatedWeight" type="number" min="0" step="0.1" placeholder="Updated weight (kg)" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input type="date" name="weightUpdateDate" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
+              <SectionCard
+                icon={FaCamera}
+                title="Photo (optional)"
+                subtitle="A clear face photo for their profile card or app."
+              >
+                <input
+                  type="file"
+                  name="memberImage"
+                  accept="image/*"
+                  onChange={handleFile}
+                  className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-900 hover:file:bg-orange-200"
+                />
+              </SectionCard>
 
-            <select name="memberCategory" onChange={handleChange} className="rounded-lg border border-slate-300 p-2 md:col-span-2">
-              <option value="">Member category (status)</option>
-              {MEMBER_CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              <SectionCard
+                icon={FaHeartbeat}
+                title="Weight & fitness (optional)"
+                subtitle="Helps track progress over time. You can add or update later."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Weight when they joined" hint="In kilograms (kg).">
+                    <input name="joiningWeight" type="number" min="0" step="0.1" placeholder="e.g. 75" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Date of that weigh-in">
+                    <input type="date" name="joiningWeightDate" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Latest weight (if different)" hint="Leave blank if same as joining.">
+                    <input name="updatedWeight" type="number" min="0" step="0.1" placeholder="kg" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Date of latest weight">
+                    <input type="date" name="weightUpdateDate" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Height (optional)" hint="Centimetres (cm).">
+                    <input name="height" type="number" min="0" step="0.1" placeholder="cm" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Fitness goal (optional)" hint="What they want to achieve.">
+                    <select name="goal" onChange={handleChange} className={inputClass}>
+                      <option value="">Select a goal</option>
+                      {goalOptions.map((goal) => (
+                        <option key={goal} value={goal}>{goal}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              </SectionCard>
 
-            <select name="workoutType" onChange={handleChange} className="rounded-lg border border-slate-300 p-2 md:col-span-2">
-              <option value="">Workout type</option>
-              {WORKOUT_TYPES.map((w) => (
-                <option key={w} value={w}>{w}</option>
-              ))}
-            </select>
+              <SectionCard
+                icon={FaIdCard}
+                title="Membership type"
+                subtitle="Pick how we classify them and what kind of training they do."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Member type" hint="General, student, senior, gold — your gym’s categories.">
+                    <select name="memberCategory" onChange={handleChange} className={inputClass}>
+                      <option value="">Select type</option>
+                      {MEMBER_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Training focus" hint="Strength, cardio, personal training, etc.">
+                    <select name="workoutType" onChange={handleChange} className={inputClass}>
+                      <option value="">Select focus</option>
+                      {WORKOUT_TYPES.map((w) => (
+                        <option key={w} value={w}>{w}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Plan name (optional)" hint="e.g. 3 months, Annual, Summer offer — for your own reference." className="sm:col-span-2">
+                    <input name="plan" placeholder="Short label for this package" onChange={handleChange} className={inputClass} />
+                  </Field>
+                </div>
+              </SectionCard>
 
-            <select
-              name="goal"
-              onChange={handleChange}
-              className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-            >
-              <option value="">Fitness goal (optional)</option>
-              {goalOptions.map((goal) => (
-                <option key={goal} value={goal}>
-                  {goal}
-                </option>
-              ))}
-            </select>
+              <SectionCard
+                icon={FaCalendarAlt}
+                title="Membership dates"
+                subtitle="When their membership starts, how long it runs, and when it ends."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Start date" hint="First day of this membership.">
+                    <input type="date" name="startDate" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="How many months?" hint="1 = one month, 12 = one year, etc.">
+                    <input name="tenureMonths" type="number" min="1" placeholder="e.g. 3" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="End date" hint="Last valid day. We can fill this from start + months if you use the option below.">
+                    <input type="date" name="endDate" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <div className="flex items-end sm:col-span-2">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-orange-100 bg-orange-50/80 p-4 text-sm text-slate-700">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                        checked={autoEndFromTenure}
+                        onChange={(e) => setAutoEndFromTenure(e.target.checked)}
+                      />
+                      <span>
+                        <span className="font-medium text-slate-900">Calculate end date automatically</span>
+                        <span className="mt-1 block text-xs text-slate-600">
+                          Uses start date + number of months. Turn off if you need a custom end date.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </SectionCard>
 
-            <input name="height" type="number" min="0" step="0.1" placeholder="Height (cm)" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="plan" placeholder="Membership plan label" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
+              <SectionCard
+                icon={FaClock}
+                title="Preferred gym time"
+                subtitle="Roughly when they usually train — helps scheduling and reporting."
+              >
+                <Field label="Usual time slot" hint="Pick a typical clock time; we save it for the member record.">
+                  <input
+                    type="time"
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+              </SectionCard>
 
-            <input type="date" name="startDate" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="tenureMonths" type="number" min="1" placeholder="Tenure (months)" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input type="date" name="endDate" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <label className="flex items-center gap-2 text-sm text-slate-600 md:col-span-2">
-              <input
-                type="checkbox"
-                checked={autoEndFromTenure}
-                onChange={(e) => setAutoEndFromTenure(e.target.checked)}
-              />
-              Auto-calculate end date from start + tenure
-            </label>
+              <SectionCard
+                icon={FaMoneyBillWave}
+                title="Payment & fees"
+                subtitle="How they paid today and any amount still due."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="How did they pay?" className="sm:col-span-2">
+                    <select
+                      name="paymentType"
+                      value={paymentType}
+                      onChange={(e) => setPaymentType(e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="Cash">Cash</option>
+                      <option value="PhonePe">PhonePe</option>
+                      <option value="UPI">Other UPI app</option>
+                    </select>
+                  </Field>
+                  <Field label="Amount received now" hint="Total paid today (₹).">
+                    <input name="amount" type="number" min="0" step="1" placeholder="₹" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Payment date" hint="Defaults to today if you leave patterns as usual.">
+                    <input type="date" name="paymentDate" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  {digitalPayment ? (
+                    <div className="sm:col-span-2 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                      <p className="mb-3 text-sm font-medium text-slate-800">UPI payment</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUseGeneratedQr(false);
+                          setShowQrModal(true);
+                        }}
+                        className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:bg-slate-800"
+                      >
+                        Show QR code to pay
+                      </button>
+                      <p className="mt-3 text-xs text-slate-500">After they pay, attach a screenshot for your records.</p>
+                      <input
+                        type="file"
+                        name="upiScreenshot"
+                        accept="image/*"
+                        onChange={handleFile}
+                        className="mt-2 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:bg-white file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700"
+                      />
+                    </div>
+                  ) : null}
+                  <Field label="Any pending fee? (optional)" hint='e.g. "No" or "Yes — ₹500 due"'>
+                    <input name="pendingStatus" placeholder="Status text" onChange={handleChange} className={inputClass} />
+                  </Field>
+                  <Field label="Pending amount (₹)" hint="0 if nothing pending.">
+                    <input name="pendingBalance" type="number" min="0" step="0.01" placeholder="0" onChange={handleChange} className={inputClass} />
+                  </Field>
+                </div>
+              </SectionCard>
 
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-xs text-slate-500">Preferred gym time (maps to sheet-style day fraction)</label>
-              <input
-                type="time"
-                value={preferredTime}
-                onChange={(e) => setPreferredTime(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 p-2"
-              />
+              <SectionCard
+                icon={FaPen}
+                title="Notes (optional)"
+                subtitle="Anything else staff should remember — medical notes, referrals, etc."
+              >
+                <textarea
+                  name="remarks"
+                  placeholder="Type any extra notes here…"
+                  onChange={handleChange}
+                  rows={3}
+                  className={`${inputClass} resize-y min-h-[88px]`}
+                />
+              </SectionCard>
             </div>
 
-            <input type="date" name="paymentDate" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <div />
+            {error ? (
+              <p className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800" role="alert">
+                {error}
+              </p>
+            ) : null}
 
-            <input name="pendingStatus" placeholder='Pending status (e.g. No, Yes(₹1,000))' onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <input name="pendingBalance" type="number" min="0" step="0.01" placeholder="Pending balance (₹)" onChange={handleChange} className="rounded-lg border border-slate-300 p-2"/>
-            <textarea name="remarks" placeholder="Remarks" onChange={handleChange} rows={2} className="rounded-lg border border-slate-300 p-2 md:col-span-2"/>
-          </div>
-
-          <input type="file" name="memberImage" onChange={handleFile} className="mt-4 block text-sm"/>
-
-          <select
-            name="paymentType"
-            value={paymentType}
-            onChange={(e) => setPaymentType(e.target.value)}
-            className="mt-4 rounded-lg border border-slate-300 p-2"
-          >
-            <option value="Cash">Cash</option>
-            <option value="PhonePe">PhonePe</option>
-            <option value="UPI">UPI</option>
-          </select>
-
-          {digitalPayment && (
-            <>
+            <div className="mt-10 flex flex-col items-stretch gap-3 border-t border-slate-200/80 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-center text-xs text-slate-500 sm:text-left">
+                You can edit all of this later from the member list.
+              </p>
               <button
                 type="button"
-                onClick={() => {
-                  setUseGeneratedQr(false);
-                  setShowQrModal(true);
-                }}
-                className="mt-3 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+                onClick={handleSubmit}
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:from-orange-500 hover:to-orange-400 focus:outline-none focus:ring-4 focus:ring-orange-300/50"
               >
-                View UPI QR
+                Save member
               </button>
-              <input type="file" name="upiScreenshot" onChange={handleFile} className="mt-2 block text-sm"/>
-            </>
-          )}
-
-          <input name="amount" placeholder="Amount paid" onChange={handleChange} className="mt-4 rounded-lg border border-slate-300 p-2"/>
-
-          {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
-
-          <button type="button" onClick={handleSubmit} className="mt-4 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition hover:bg-orange-500">
-            Add Member
-          </button>
+            </div>
           </motion.div>
         </motion.div>
       </div>
@@ -232,21 +408,21 @@ function AddMember() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <div className="absolute inset-0 bg-black/60" onClick={() => setShowQrModal(false)} />
+            <div className="absolute inset-0 bg-black/60" onClick={() => setShowQrModal(false)} aria-hidden />
             <div className="relative flex min-h-screen items-center justify-center p-4">
               <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 220, damping: 22 }}
-                className="w-full max-w-sm rounded-2xl border border-orange-200 bg-white p-5 shadow-2xl"
+                className="w-full max-w-sm rounded-2xl border border-orange-200 bg-white p-6 shadow-2xl"
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">Scan to Pay</h3>
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">Scan to pay</h3>
                   <button
                     type="button"
                     onClick={() => setShowQrModal(false)}
-                    className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200"
+                    className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-200"
                   >
                     Close
                   </button>
@@ -254,7 +430,7 @@ function AddMember() {
                 {!useGeneratedQr ? (
                   <img
                     src={externalQrUrl}
-                    alt="UPI QR"
+                    alt="UPI QR code"
                     onError={() => setUseGeneratedQr(true)}
                     className="h-auto w-full rounded-xl border border-slate-200 object-contain"
                   />
@@ -263,12 +439,10 @@ function AddMember() {
                     <QRCodeSVG value={upiPayLink} size={280} />
                   </div>
                 )}
-                <p className="mt-3 text-center text-xs text-slate-500">
-                  After payment, upload the UPI screenshot and continue.
+                <p className="mt-4 text-center text-xs text-slate-500">
+                  Ask the member to scan and pay, then upload the payment screenshot above.
                 </p>
-                <p className="mt-1 text-center text-xs font-medium text-slate-600">
-                  UPI ID: {upiId}
-                </p>
+                <p className="mt-2 text-center text-xs font-medium text-slate-600">UPI ID: {upiId}</p>
               </motion.div>
             </div>
           </motion.div>

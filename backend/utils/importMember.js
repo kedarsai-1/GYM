@@ -149,11 +149,21 @@ function buildMemberFromImportRow(row) {
   const updatedWeight = parseWeightKg(f.updatedWeight);
   const pendingBalance = parseNum(f.pendingBalance) ?? 0;
   let preferredTimeFraction = parseNum(f.preferredTimeFraction);
-  if (
-    (preferredTimeFraction === undefined || preferredTimeFraction === null) &&
-    f.preferredTime
-  ) {
-    preferredTimeFraction = timeStringToFraction(String(f.preferredTime));
+  if (preferredTimeFraction === undefined || preferredTimeFraction === null) {
+    if (f.preferredTime !== undefined && f.preferredTime !== null && f.preferredTime !== "") {
+      const pt = f.preferredTime;
+      if (typeof pt === "number" && pt >= 0 && pt <= 1) {
+        preferredTimeFraction = pt;
+      } else {
+        const s = String(pt).trim();
+        const n = parseFloat(s);
+        if (!Number.isNaN(n) && n >= 0 && n <= 1) {
+          preferredTimeFraction = n;
+        } else {
+          preferredTimeFraction = timeStringToFraction(s);
+        }
+      }
+    }
   }
 
   const startDate = parseFlexibleDate(f.startDate);

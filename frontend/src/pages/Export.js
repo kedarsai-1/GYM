@@ -15,41 +15,21 @@ function Export() {
     API.get("/members/all").then((res) => setMembers(res.data || []));
   }, []);
 
-  const exportBulk = (type) => {
-    const path = type === "csv" ? "/export/csv" : "/export/excel";
-    window.open(`${apiBase}${path}`, "_blank");
-  };
-  const exportBulkImportCompatible = (type) => {
-    const path =
-      type === "csv" ? "/export/import-compatible/csv" : "/export/import-compatible/excel";
-    window.open(`${apiBase}${path}`, "_blank");
-  };
-  const exportDietBulk = (type) => {
-    const path = type === "csv" ? "/export/diet/csv" : "/export/diet/excel";
+  const openExport = (path) => {
     window.open(`${apiBase}${path}`, "_blank");
   };
 
-  const exportMember = (type) => {
-    if (!selectedMember) return;
-    const path = type === "csv" ? `/export/csv/${selectedMember}` : `/export/excel/${selectedMember}`;
-    window.open(`${apiBase}${path}`, "_blank");
+  const exportDietBulk = (type) => {
+    openExport(type === "csv" ? "/export/diet/csv" : "/export/diet/excel");
   };
-  const exportMemberImportCompatible = (type) => {
-    if (!selectedMember) return;
-    const path =
-      type === "csv"
-        ? `/export/import-compatible/csv/${selectedMember}`
-        : `/export/import-compatible/excel/${selectedMember}`;
-    window.open(`${apiBase}${path}`, "_blank");
-  };
+
   const exportDietMember = (type) => {
     if (!selectedMember) return;
-    const path =
-      type === "csv"
-        ? `/export/diet/csv/${selectedMember}`
-        : `/export/diet/excel/${selectedMember}`;
-    window.open(`${apiBase}${path}`, "_blank");
+    openExport(
+      type === "csv" ? `/export/diet/csv/${selectedMember}` : `/export/diet/excel/${selectedMember}`
+    );
   };
+
   const filteredMembers = members.filter((m) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
@@ -62,45 +42,48 @@ function Export() {
       <div className="flex-1">
         <Navbar />
         <motion.div variants={pageAnimation} initial="hidden" animate="show" className="min-h-screen p-6">
-          <div className="space-y-6 rounded-2xl border border-orange-200/60 bg-white/95 p-6 shadow-xl backdrop-blur">
-            <h2 className="text-2xl font-semibold text-slate-900">Export</h2>
+          <div className="space-y-8 rounded-2xl border border-orange-200/60 bg-white/95 p-6 shadow-xl backdrop-blur">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900">Export</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Member data exports use the same columns as your Gym Client Details spreadsheet.
+              </p>
+            </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-slate-700">Bulk Export (All Members)</h3>
+              <h3 className="text-sm font-semibold text-slate-800">Gym Client Details</h3>
               <p className="mt-1 max-w-2xl text-xs text-slate-500">
-                Full backup includes id, diet, weekly workouts, and created date. Use re-importable export
-                if you want the same columns as the bulk import template (edit offline, then import again).
+                Columns: ID, Name, Gender, Age, weights &amp; dates, payment, membership dates, workout
+                type, tenure, preferred time (0–1 day fraction), mobile, address, status, pending fields,
+                remarks — aligned with bulk import.
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
+                <a
+                  href={`${apiBase}/export/import-template`}
+                  download
+                  className="inline-flex rounded-lg border border-orange-200 bg-orange-50/80 px-4 py-2 text-sm font-medium text-orange-950 hover:bg-orange-100"
+                >
+                  Empty template (.xlsx)
+                </a>
                 <button
-                  onClick={() => exportBulk("csv")}
+                  type="button"
+                  onClick={() => openExport("/export/csv")}
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800"
                 >
-                  Full CSV
+                  All members — CSV
                 </button>
                 <button
-                  onClick={() => exportBulk("excel")}
+                  type="button"
+                  onClick={() => openExport("/export/excel")}
                   className="rounded-lg bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-500"
                 >
-                  Full Excel
-                </button>
-                <button
-                  onClick={() => exportBulkImportCompatible("csv")}
-                  className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100"
-                >
-                  Re-importable CSV
-                </button>
-                <button
-                  onClick={() => exportBulkImportCompatible("excel")}
-                  className="rounded-lg border border-amber-400 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-200"
-                >
-                  Re-importable Excel
+                  All members — Excel
                 </button>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-slate-700">Export Single Member</h3>
+              <h3 className="text-sm font-semibold text-slate-800">Single member (Gym Client Details)</h3>
               <div className="mt-3 space-y-3">
                 <input
                   value={search}
@@ -121,66 +104,58 @@ function Export() {
                   ))}
                 </select>
                 <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => exportMember("csv")}
-                  disabled={!selectedMember}
-                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
-                >
-                  Full CSV
-                </button>
-                <button
-                  onClick={() => exportMember("excel")}
-                  disabled={!selectedMember}
-                  className="rounded-lg bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-500 disabled:opacity-50"
-                >
-                  Full Excel
-                </button>
-                <button
-                  onClick={() => exportMemberImportCompatible("csv")}
-                  disabled={!selectedMember}
-                  className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100 disabled:opacity-50"
-                >
-                  Re-importable CSV
-                </button>
-                <button
-                  onClick={() => exportMemberImportCompatible("excel")}
-                  disabled={!selectedMember}
-                  className="rounded-lg border border-amber-400 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-200 disabled:opacity-50"
-                >
-                  Re-importable Excel
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => selectedMember && openExport(`/export/csv/${selectedMember}`)}
+                    disabled={!selectedMember}
+                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
+                  >
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => selectedMember && openExport(`/export/excel/${selectedMember}`)}
+                    disabled={!selectedMember}
+                    className="rounded-lg bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-500 disabled:opacity-50"
+                  >
+                    Excel
+                  </button>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-slate-700">Diet Plan Export</h3>
+              <h3 className="text-sm font-semibold text-slate-800">Diet plans</h3>
               <div className="mt-3 flex flex-wrap gap-3">
                 <button
+                  type="button"
                   onClick={() => exportDietBulk("csv")}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500"
                 >
-                  Bulk Diet CSV
+                  Bulk diet CSV
                 </button>
                 <button
+                  type="button"
                   onClick={() => exportDietBulk("excel")}
                   className="rounded-lg bg-indigo-700 px-4 py-2 text-sm text-white hover:bg-indigo-600"
                 >
-                  Bulk Diet Excel
+                  Bulk diet Excel
                 </button>
                 <button
+                  type="button"
                   onClick={() => exportDietMember("csv")}
                   disabled={!selectedMember}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500 disabled:opacity-50"
                 >
-                  Member Diet CSV
+                  Member diet CSV
                 </button>
                 <button
+                  type="button"
                   onClick={() => exportDietMember("excel")}
                   disabled={!selectedMember}
                   className="rounded-lg bg-indigo-700 px-4 py-2 text-sm text-white hover:bg-indigo-600 disabled:opacity-50"
                 >
-                  Member Diet Excel
+                  Member diet Excel
                 </button>
               </div>
             </div>

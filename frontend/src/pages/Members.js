@@ -60,26 +60,8 @@ function Members() {
     }
   };
 
-  const downloadMemberExport = (id, type) => {
-    const path = type === "csv" ? `/export/csv/${id}` : `/export/excel/${id}`;
-    window.open(`${apiBase}${path}`, "_blank");
-  };
   const downloadMemberDietExport = (id, type) => {
     const path = type === "csv" ? `/export/diet/csv/${id}` : `/export/diet/excel/${id}`;
-    window.open(`${apiBase}${path}`, "_blank");
-  };
-
-  /** Same columns as bulk import / template — edit offline and re-import */
-  const downloadBulkImportCompatible = (type) => {
-    const path =
-      type === "csv" ? "/export/import-compatible/csv" : "/export/import-compatible/excel";
-    window.open(`${apiBase}${path}`, "_blank");
-  };
-  const downloadMemberImportCompatible = (id, type) => {
-    const path =
-      type === "csv"
-        ? `/export/import-compatible/csv/${id}`
-        : `/export/import-compatible/excel/${id}`;
     window.open(`${apiBase}${path}`, "_blank");
   };
 
@@ -146,24 +128,11 @@ function Members() {
                 download
                 className="font-medium text-orange-800 underline decoration-orange-300 hover:text-orange-900"
               >
-                Import template (.xlsx)
+                Gym Client Details template (.xlsx)
               </a>
-              <button
-                type="button"
-                onClick={() => downloadBulkImportCompatible("csv")}
-                className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
-                title="All members, columns only — matches bulk import"
-              >
-                Export re-importable CSV
-              </button>
-              <button
-                type="button"
-                onClick={() => downloadBulkImportCompatible("excel")}
-                className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
-                title="All members, columns only — matches bulk import"
-              >
-                Export re-importable Excel
-              </button>
+              <span className="text-xs text-slate-500">
+                Use Export page for full Gym Client Details CSV/Excel.
+              </span>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-white px-3 py-2 font-medium text-slate-800 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
                 <input
                   type="file"
@@ -237,34 +206,6 @@ function Members() {
                       className="text-red-600 hover:text-red-500"
                     >
                       <FaTrash />
-                    </button>
-                    <button
-                      onClick={() => downloadMemberExport(m._id, "csv")}
-                      className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200"
-                    >
-                      CSV
-                    </button>
-                    <button
-                      onClick={() => downloadMemberExport(m._id, "excel")}
-                      className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200"
-                    >
-                      Excel
-                    </button>
-                    <button
-                      type="button"
-                      title="Re-importable — same columns as bulk import"
-                      onClick={() => downloadMemberImportCompatible(m._id, "csv")}
-                      className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100"
-                    >
-                      Re-imp CSV
-                    </button>
-                    <button
-                      type="button"
-                      title="Re-importable — same columns as bulk import"
-                      onClick={() => downloadMemberImportCompatible(m._id, "excel")}
-                      className="rounded bg-amber-50 px-2 py-1 text-xs font-medium text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100"
-                    >
-                      Re-imp XLSX
                     </button>
                     <button
                       onClick={() => downloadMemberDietExport(m._id, "csv")}
