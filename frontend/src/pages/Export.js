@@ -19,6 +19,11 @@ function Export() {
     const path = type === "csv" ? "/export/csv" : "/export/excel";
     window.open(`${apiBase}${path}`, "_blank");
   };
+  const exportBulkImportCompatible = (type) => {
+    const path =
+      type === "csv" ? "/export/import-compatible/csv" : "/export/import-compatible/excel";
+    window.open(`${apiBase}${path}`, "_blank");
+  };
   const exportDietBulk = (type) => {
     const path = type === "csv" ? "/export/diet/csv" : "/export/diet/excel";
     window.open(`${apiBase}${path}`, "_blank");
@@ -27,6 +32,14 @@ function Export() {
   const exportMember = (type) => {
     if (!selectedMember) return;
     const path = type === "csv" ? `/export/csv/${selectedMember}` : `/export/excel/${selectedMember}`;
+    window.open(`${apiBase}${path}`, "_blank");
+  };
+  const exportMemberImportCompatible = (type) => {
+    if (!selectedMember) return;
+    const path =
+      type === "csv"
+        ? `/export/import-compatible/csv/${selectedMember}`
+        : `/export/import-compatible/excel/${selectedMember}`;
     window.open(`${apiBase}${path}`, "_blank");
   };
   const exportDietMember = (type) => {
@@ -54,18 +67,34 @@ function Export() {
 
             <div>
               <h3 className="text-sm font-semibold text-slate-700">Bulk Export (All Members)</h3>
-              <div className="mt-3 flex gap-3">
+              <p className="mt-1 max-w-2xl text-xs text-slate-500">
+                Full backup includes id, diet, weekly workouts, and created date. Use re-importable export
+                if you want the same columns as the bulk import template (edit offline, then import again).
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
                 <button
                   onClick={() => exportBulk("csv")}
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800"
                 >
-                  Download CSV
+                  Full CSV
                 </button>
                 <button
                   onClick={() => exportBulk("excel")}
                   className="rounded-lg bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-500"
                 >
-                  Download Excel
+                  Full Excel
+                </button>
+                <button
+                  onClick={() => exportBulkImportCompatible("csv")}
+                  className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100"
+                >
+                  Re-importable CSV
+                </button>
+                <button
+                  onClick={() => exportBulkImportCompatible("excel")}
+                  className="rounded-lg border border-amber-400 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-200"
+                >
+                  Re-importable Excel
                 </button>
               </div>
             </div>
@@ -97,14 +126,28 @@ function Export() {
                   disabled={!selectedMember}
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:opacity-50"
                 >
-                  Member CSV
+                  Full CSV
                 </button>
                 <button
                   onClick={() => exportMember("excel")}
                   disabled={!selectedMember}
                   className="rounded-lg bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-500 disabled:opacity-50"
                 >
-                  Member Excel
+                  Full Excel
+                </button>
+                <button
+                  onClick={() => exportMemberImportCompatible("csv")}
+                  disabled={!selectedMember}
+                  className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100 disabled:opacity-50"
+                >
+                  Re-importable CSV
+                </button>
+                <button
+                  onClick={() => exportMemberImportCompatible("excel")}
+                  disabled={!selectedMember}
+                  className="rounded-lg border border-amber-400 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-950 hover:bg-amber-200 disabled:opacity-50"
+                >
+                  Re-importable Excel
                 </button>
                 </div>
               </div>

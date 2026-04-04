@@ -31,10 +31,17 @@ function Dashboard() {
     return paymentDate && paymentDate >= monthStart && paymentDate < nextMonthStart;
   });
 
-  const upiCount = monthlyPayments.filter((m) => m.payment?.type === "UPI").length;
+  const digitalCount = monthlyPayments.filter((m) => {
+    const t = m.payment?.type;
+    return t === "UPI" || t === "PhonePe";
+  }).length;
   const cashCount = monthlyPayments.filter((m) => m.payment?.type === "Cash").length;
   const revenue = monthlyPayments.reduce(
     (sum, m) => sum + (Number(m.payment?.amount) || 0),
+    0
+  );
+  const totalPendingBalance = members.reduce(
+    (sum, m) => sum + (Number(m.pendingBalance) || 0),
     0
   );
 
@@ -58,12 +65,13 @@ function Dashboard() {
           </motion.div>
           <Notification members={expiring} />
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
             <StatCard title="Total Members" value={members.length} />
             <StatCard title=" This Month " value={monthlyMembers.length} />
             <StatCard title="Monthly Revenue" value={`₹${revenue}`} />
-            <StatCard title="UPI Payments (Monthly)" value={upiCount} />
+            <StatCard title="Digital (UPI / PhonePe) — Monthly" value={digitalCount} />
             <StatCard title="Cash Payments (Monthly)" value={cashCount} />
+            <StatCard title="Total Pending Balance" value={`₹${totalPendingBalance}`} />
           </div>
         </motion.div>
       </div>

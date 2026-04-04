@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb+srv://kedar:Zero%401234@cluster0.pygiv.mongodb.net/e-commerce?retryWrites=true&w=majority");
+    await mongoose.connect();
     console.log("MongoDB Connected");
   } catch (error) {
     console.log(error);

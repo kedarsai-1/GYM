@@ -27,4 +27,13 @@ const storage = multer.diskStorage({
   }
 });
 
-module.exports = multer({ storage });
+const upload = multer({ storage });
+
+/** In-memory upload for bulk CSV/XLSX import (not persisted as a single file). */
+const uploadImport = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 },
+});
+
+module.exports = upload;
+module.exports.uploadImport = uploadImport;
