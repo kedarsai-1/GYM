@@ -6,6 +6,16 @@ import API from "../services/api";
 import { motion } from "framer-motion";
 import { pageAnimation, popAnimation } from "../animations/pageAnimations";
 import {
+  FaUser,
+  FaCamera,
+  FaHeartbeat,
+  FaIdCard,
+  FaCalendarAlt,
+  FaClock,
+  FaMoneyBillWave,
+  FaPen,
+} from "react-icons/fa";
+import {
   WORKOUT_TYPES,
   MEMBER_CATEGORIES,
   fractionToTimeString,
@@ -21,6 +31,36 @@ const goalOptions = [
   "General Fitness",
   "Endurance",
 ];
+
+const inputClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100";
+
+function Field({ label, hint, children, className = "" }) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-sm font-medium text-slate-800">{label}</label>
+      {hint ? <p className="mb-2 text-xs leading-relaxed text-slate-500">{hint}</p> : null}
+      {children}
+    </div>
+  );
+}
+
+function SectionCard({ icon: Icon, title, subtitle, children }) {
+  return (
+    <section className="rounded-2xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/90 p-5 shadow-sm ring-1 ring-slate-100/80 sm:p-6">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-md shadow-orange-600/25">
+          <Icon className="h-5 w-5" aria-hidden />
+        </span>
+        <div>
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h3>
+          <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
 
 const emptyForm = {
   name: "",
@@ -172,7 +212,7 @@ function EditMember() {
   const displayPhoto = previewUrl || existingImageUrl;
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-orange-50/40 to-slate-100">
       <Sidebar />
       <div className="flex-1">
         <Navbar />
@@ -181,280 +221,397 @@ function EditMember() {
           variants={pageAnimation}
           initial="hidden"
           animate="show"
-          className="min-h-screen p-6"
+          className="min-h-screen p-4 pb-16 sm:p-6 lg:p-8"
         >
-          <motion.form variants={popAnimation} onSubmit={handleSubmit} className="max-w-3xl rounded-2xl border border-orange-200/60 bg-white/95 p-6 shadow-xl backdrop-blur">
-            <h2 className="mb-1 text-2xl font-semibold text-slate-900">Edit Member</h2>
-            <p className="mb-4 text-sm text-slate-500">Update profile, membership, payment, and photo.</p>
+          <motion.form variants={popAnimation} onSubmit={handleSubmit} className="mx-auto max-w-4xl">
+            <header className="mb-8 text-center sm:text-left">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                Edit member details
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+                Update any information in simple steps. You can save partial changes and come
+                back later.
+              </p>
+            </header>
 
-            <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
-              <p className="mb-2 text-sm font-medium text-slate-800">Member photo</p>
-              <div className="flex flex-wrap items-start gap-4">
-                <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
-                  {displayPhoto ? (
-                    <img
-                      src={displayPhoto}
-                      alt="Member"
-                      className="h-full w-full object-cover"
+            <div className="space-y-8">
+              <SectionCard
+                icon={FaUser}
+                title="Basic details"
+                subtitle="Name, contact and personal information."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Full name">
+                    <input
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="e.g. Ramesh Kumar"
                     />
-                  ) : (
-                    <span className="px-2 text-center text-xs text-slate-400">No photo</span>
-                  )}
+                  </Field>
+                  <Field label="Mobile number">
+                    <input
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="10-digit number"
+                    />
+                  </Field>
+                  <Field label="Age">
+                    <input
+                      type="number"
+                      name="age"
+                      min="0"
+                      value={form.age}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="Years"
+                    />
+                  </Field>
+                  <Field label="Gender">
+                    <select
+                      name="gender"
+                      value={form.gender}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="">Choose one</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </Field>
+                  <Field label="Address" className="sm:col-span-2">
+                    <input
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="House / street / area"
+                    />
+                  </Field>
                 </div>
-                <div className="min-w-0 flex-1">
+              </SectionCard>
+
+              <SectionCard
+                icon={FaCamera}
+                title="Profile photo"
+                subtitle="Replace the member photo only when needed."
+              >
+                <div className="flex flex-wrap items-start gap-4">
+                  <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    {displayPhoto ? (
+                      <img
+                        src={displayPhoto}
+                        alt="Member"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="px-2 text-center text-xs text-slate-400">No photo</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-900 hover:file:bg-orange-200"
+                    />
+                    <p className="mt-2 text-xs text-slate-500">
+                      Choose a new image to replace the current one. Leave unchanged to keep the existing photo.
+                    </p>
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaHeartbeat}
+                title="Weight & fitness"
+                subtitle="Track progress and goals over time."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Weight when joined (kg)">
+                    <input
+                      type="number"
+                      name="joiningWeight"
+                      min="0"
+                      step="0.1"
+                      value={form.joiningWeight}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Joining weight date">
+                    <input
+                      type="date"
+                      name="joiningWeightDate"
+                      value={form.joiningWeightDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Latest weight (kg)">
+                    <input
+                      type="number"
+                      name="updatedWeight"
+                      min="0"
+                      step="0.1"
+                      value={form.updatedWeight}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Latest weight date">
+                    <input
+                      type="date"
+                      name="weightUpdateDate"
+                      value={form.weightUpdateDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Height (cm)">
+                    <input
+                      type="number"
+                      name="height"
+                      min="0"
+                      step="0.1"
+                      value={form.height}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="Fitness goal">
+                    <select
+                      name="goal"
+                      value={form.goal}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="">Select a goal</option>
+                      {goalOptions.map((goal) => (
+                        <option key={goal} value={goal}>
+                          {goal}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaIdCard}
+                title="Membership type"
+                subtitle="How this member is categorized in your gym."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Member type">
+                    <select
+                      name="memberCategory"
+                      value={form.memberCategory}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="">Select type</option>
+                      {MEMBER_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Training focus">
+                    <select
+                      name="workoutType"
+                      value={form.workoutType}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="">Select focus</option>
+                      {WORKOUT_TYPES.map((w) => (
+                        <option key={w} value={w}>{w}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field
+                    label="Plan name (optional)"
+                    hint="e.g. 3 months, Annual, Student package"
+                    className="sm:col-span-2"
+                  >
+                    <input
+                      name="plan"
+                      value={form.plan}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="Short package label"
+                    />
+                  </Field>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaCalendarAlt}
+                title="Membership dates"
+                subtitle="Start date, months, and end date."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Start date">
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={form.startDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <Field label="How many months?">
+                    <input
+                      type="number"
+                      name="tenureMonths"
+                      min="1"
+                      value={form.tenureMonths}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="e.g. 3"
+                    />
+                  </Field>
+                  <Field label="End date">
+                    <input
+                      type="date"
+                      name="endDate"
+                      value={form.endDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <div className="flex items-end sm:col-span-2">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-orange-100 bg-orange-50/80 p-4 text-sm text-slate-700">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                        checked={autoEndFromTenure}
+                        onChange={(e) => setAutoEndFromTenure(e.target.checked)}
+                      />
+                      <span>
+                        <span className="font-medium text-slate-900">Calculate end date automatically</span>
+                        <span className="mt-1 block text-xs text-slate-600">
+                          Uses start date + number of months.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaClock}
+                title="Preferred gym time"
+                subtitle="Usual training time for scheduling."
+              >
+                <Field label="Time slot">
                   <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-900 hover:file:bg-orange-200"
+                    type="time"
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className={inputClass}
                   />
-                  <p className="mt-2 text-xs text-slate-500">
-                    Choose a new image to replace the current one. Leave unchanged to keep the existing photo.
-                  </p>
+                </Field>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaMoneyBillWave}
+                title="Payment & dues"
+                subtitle="Current payment mode and any pending amount."
+              >
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Payment type">
+                    <select
+                      name="paymentType"
+                      value={form.paymentType}
+                      onChange={handleChange}
+                      className={inputClass}
+                    >
+                      <option value="Cash">Cash</option>
+                      <option value="PhonePe">PhonePe</option>
+                      <option value="UPI">UPI</option>
+                    </select>
+                  </Field>
+                  <Field label="Amount received">
+                    <input
+                      name="amount"
+                      value={form.amount}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="₹"
+                    />
+                  </Field>
+                  <Field label="Payment date">
+                    <input
+                      type="date"
+                      name="paymentDate"
+                      value={form.paymentDate}
+                      onChange={handleChange}
+                      className={inputClass}
+                    />
+                  </Field>
+                  <div />
+                  <Field label="Pending status" hint='e.g. "No" or "Yes - ₹500 pending"'>
+                    <input
+                      name="pendingStatus"
+                      value={form.pendingStatus}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="Status text"
+                    />
+                  </Field>
+                  <Field label="Pending amount (₹)">
+                    <input
+                      type="number"
+                      name="pendingBalance"
+                      min="0"
+                      step="0.01"
+                      value={form.pendingBalance}
+                      onChange={handleChange}
+                      className={inputClass}
+                      placeholder="0"
+                    />
+                  </Field>
                 </div>
-              </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={FaPen}
+                title="Notes"
+                subtitle="Any important reminders for staff."
+              >
+                <textarea
+                  name="remarks"
+                  value={form.remarks}
+                  onChange={handleChange}
+                  rows={3}
+                  className={`${inputClass} resize-y min-h-[88px]`}
+                  placeholder="Type any extra notes here..."
+                />
+              </SectionCard>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Name"
-              />
+            {error ? (
+              <p className="mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800" role="alert">
+                {error}
+              </p>
+            ) : null}
 
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Mobile"
-              />
-
-              <input
-                type="number"
-                name="age"
-                min="0"
-                value={form.age}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Age"
-              />
-
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
+            <div className="mt-10 flex flex-col items-stretch gap-3 border-t border-slate-200/80 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-center text-xs text-slate-500 sm:text-left">
+                You can continue updating this member at any time.
+              </p>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:from-orange-500 hover:to-orange-400 focus:outline-none focus:ring-4 focus:ring-orange-300/50"
               >
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-
-              <input
-                name="address"
-                value={form.address}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-                placeholder="Address"
-              />
-
-              <input
-                type="number"
-                name="joiningWeight"
-                min="0"
-                step="0.1"
-                value={form.joiningWeight}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Joining weight (kg)"
-              />
-              <input
-                type="date"
-                name="joiningWeightDate"
-                value={form.joiningWeightDate}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              />
-              <input
-                type="number"
-                name="updatedWeight"
-                min="0"
-                step="0.1"
-                value={form.updatedWeight}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Updated weight (kg)"
-              />
-              <input
-                type="date"
-                name="weightUpdateDate"
-                value={form.weightUpdateDate}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              />
-
-              <select
-                name="memberCategory"
-                value={form.memberCategory}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-              >
-                <option value="">Member category</option>
-                {MEMBER_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-
-              <select
-                name="workoutType"
-                value={form.workoutType}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-              >
-                <option value="">Workout type</option>
-                {WORKOUT_TYPES.map((w) => (
-                  <option key={w} value={w}>{w}</option>
-                ))}
-              </select>
-
-              <select
-                name="goal"
-                value={form.goal}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-              >
-                <option value="">Fitness goal (optional)</option>
-                {goalOptions.map((goal) => (
-                  <option key={goal} value={goal}>
-                    {goal}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="number"
-                name="height"
-                min="0"
-                step="0.1"
-                value={form.height}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Height (cm)"
-              />
-              <input
-                name="plan"
-                value={form.plan}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Membership plan label"
-              />
-
-              <input
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              />
-              <input
-                type="number"
-                name="tenureMonths"
-                min="1"
-                value={form.tenureMonths}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Tenure (months)"
-              />
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              />
-              <label className="flex items-center gap-2 text-sm text-slate-600 md:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={autoEndFromTenure}
-                  onChange={(e) => setAutoEndFromTenure(e.target.checked)}
-                />
-                Auto-calculate end date from start + tenure
-              </label>
-
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-xs text-slate-500">Preferred gym time</label>
-                <input
-                  type="time"
-                  value={preferredTime}
-                  onChange={(e) => setPreferredTime(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 p-2"
-                />
-              </div>
-
-              <input
-                type="date"
-                name="paymentDate"
-                value={form.paymentDate}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              />
-              <div />
-
-              <select
-                name="paymentType"
-                value={form.paymentType}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-              >
-                <option value="Cash">Cash</option>
-                <option value="PhonePe">PhonePe</option>
-                <option value="UPI">UPI</option>
-              </select>
-
-              <input
-                name="amount"
-                value={form.amount}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Amount"
-              />
-
-              <input
-                name="pendingStatus"
-                value={form.pendingStatus}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Pending status"
-              />
-              <input
-                type="number"
-                name="pendingBalance"
-                min="0"
-                step="0.01"
-                value={form.pendingBalance}
-                onChange={handleChange}
-                className="rounded-lg border border-slate-300 p-2"
-                placeholder="Pending balance (₹)"
-              />
-              <textarea
-                name="remarks"
-                value={form.remarks}
-                onChange={handleChange}
-                rows={2}
-                className="rounded-lg border border-slate-300 p-2 md:col-span-2"
-                placeholder="Remarks"
-              />
+                Save changes
+              </button>
             </div>
-
-            {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
-
-            <button type="submit" className="mt-4 rounded-lg bg-orange-600 px-4 py-2 font-medium text-white transition hover:bg-orange-500">
-              Update Member
-            </button>
           </motion.form>
         </motion.div>
       </div>

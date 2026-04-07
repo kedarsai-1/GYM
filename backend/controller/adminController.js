@@ -54,7 +54,10 @@ exports.seedAdmin = async (req, res) => {
   try {
     const totalAdmins = await Admin.countDocuments();
     if (totalAdmins >= 1) {
-      return res.status(403).json({ message: "Admin already exists. Seed allowed only once." });
+      return res.status(403).json({
+        message:
+          "Admin already exists. Remove the admin document from the database to seed again.",
+      });
     }
 
     const username = req.body.username || process.env.ADMIN_USERNAME || "admin";
