@@ -35,12 +35,46 @@ function resolveEndDate(body) {
   return undefined;
 }
 
+function normalizePhone(v) {
+  if (v === undefined || v === null) return "";
+  return String(v).replace(/\D/g, "");
+}
+
+function normalizeName(v) {
+  if (v === undefined || v === null) return "";
+  return String(v).trim().toLowerCase();
+}
+
+async function findDuplicateMember({ name, phone, excludeId }) {
+  const nPhone = normalizePhone(phone);
+  const nName = normalizeName(name);
+  const query = [];
+
+  if (nPhone) {
+    query.push({ phone: new RegExp(`^\\D*${nPhone}\\D*$`) });
+  }
+  if (nName && nPhone) {
+    query.push({ name: new RegExp(`^${nName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"), phone: new RegExp(`^\\D*${nPhone}\\D*$`) });
+  }
+  if (!query.length) return null;
+
+  const finalQuery = { $or: query };
+  if (excludeId) finalQuery._id = { $ne: excludeId };
+  return Member.findOne(finalQuery).lean();
+}
+
 exports.addMember = async (req, res) => {
   try {
     const files = req.files || {};
     const age = Number(req.body.age);
     if (!Number.isNaN(age) && age < 0) {
       return res.status(400).json({ message: "Age cannot be negative" });
+    }
+    const dup = await findDuplicateMember({ name: req.body.name, phone: req.body.phone });
+    if (dup) {
+      return res.status(409).json({
+        message: "Member already exists with this mobile number",
+      });
     }
 
     const startDate = parseDate(req.body.startDate);
@@ -127,6 +161,12 @@ exports.bulkImportMembers = async (req, res) => {
           results.skipped += 1;
           continue;
         }
+        const dup = await findDuplicateMember({ name: doc.name, phone: doc.phone });
+        if (dup) {
+          results.skipped += 1;
+          results.errors.push({ row: i + 2, message: "Duplicate member (mobile already exists)" });
+          continue;
+        }
         const m = new Member(doc);
         await m.save();
         results.imported += 1;
@@ -162,6 +202,16 @@ exports.updateMember = async (req, res) => {
     const existing = await Member.findById(req.params.id);
     if (!existing) {
       return res.status(404).json({ message: "Member not found" });
+    }
+    const dup = await findDuplicateMember({
+      name: req.body.name ?? existing.name,
+      phone: req.body.phone ?? existing.phone,
+      excludeId: req.params.id,
+    });
+    if (dup) {
+      return res.status(409).json({
+        message: "Another member already uses this mobile number",
+      });
     }
 
     const startDate =
@@ -261,6 +311,24 @@ exports.updateMember = async (req, res) => {
 exports.deleteMember = async (req, res) => {
   await Member.findByIdAndDelete(req.params.id);
   res.json("Member Deleted");
+};
+
+exports.bulkDeleteMembers = async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    if (!ids.length) {
+      return res.status(400).json({ message: "No member ids provided" });
+    }
+    const uniqueIds = [...new Set(ids.map(String))];
+    const result = await Member.deleteMany({ _id: { $in: uniqueIds } });
+    return res.json({
+      message: "Bulk delete completed",
+      requested: uniqueIds.length,
+      deleted: result.deletedCount || 0,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to bulk delete members", error: error.message });
+  }
 };
 
 exports.updateDietPlan = async (req, res) => {

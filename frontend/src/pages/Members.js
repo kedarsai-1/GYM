@@ -12,6 +12,7 @@ function Members() {
   const [members, setMembers] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [page, setPage] = useState(1);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
@@ -29,6 +30,7 @@ function Members() {
   useEffect(() => {
     const endpoint = isExpiringFilter ? "/members/expiring/list" : "/members/all";
     API.get(endpoint).then((res) => setMembers(res.data));
+    setSelectedIds([]);
     setPage(1);
   }, [isExpiringFilter]);
 
@@ -57,7 +59,12 @@ function Members() {
     if (window.confirm("Delete this member?")) {
       await API.delete(`/members/delete/${id}`);
       API.get(membersListEndpoint).then((res) => setMembers(res.data));
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
     }
+  };
+
+  const toggleSelected = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   const downloadMemberDietExport = (id, type) => {
@@ -83,6 +90,28 @@ function Members() {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+  const currentPageIds = paginatedMembers.map((m) => m._id);
+  const allCurrentPageSelected =
+    currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+
+  const toggleSelectAllCurrentPage = () => {
+    if (!currentPageIds.length) return;
+    setSelectedIds((prev) => {
+      if (allCurrentPageSelected) {
+        return prev.filter((id) => !currentPageIds.includes(id));
+      }
+      const next = new Set([...prev, ...currentPageIds]);
+      return Array.from(next);
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    if (!window.confirm(`Delete ${selectedIds.length} selected member(s)?`)) return;
+    await API.post("/members/delete/bulk", { ids: selectedIds });
+    setSelectedIds([]);
+    API.get(membersListEndpoint).then((res) => setMembers(res.data));
+  };
 
   const getMemberImage = (member) => {
     if (!member?.memberImage) return "";
@@ -120,6 +149,18 @@ function Members() {
               className="w-full max-w-sm rounded-lg border border-slate-300 bg-white p-2 text-sm"
             />
           </div>
+          {selectedIds.length > 0 ? (
+            <div className="mb-3 flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm">
+              <span className="text-rose-800">{selectedIds.length} member(s) selected</span>
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                className="rounded bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-500"
+              >
+                Delete Selected
+              </button>
+            </div>
+          ) : null}
 
           {!isExpiringFilter ? (
             <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-orange-200 bg-orange-50/50 px-4 py-3 text-sm">
@@ -164,6 +205,14 @@ function Members() {
           <table className="w-full overflow-hidden rounded-2xl border border-orange-200/60 bg-white/95 shadow-xl backdrop-blur">
             <thead className="bg-slate-100 text-left text-sm text-slate-700">
               <tr>
+                <th className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allCurrentPageSelected}
+                    onChange={toggleSelectAllCurrentPage}
+                    aria-label="Select all on current page"
+                  />
+                </th>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Phone</th>
                 <th className="px-4 py-3">Category</th>
@@ -176,6 +225,14 @@ function Members() {
             <tbody>
               {paginatedMembers.map((m) => (
                 <tr key={m._id} className="border-b text-sm text-slate-700">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(m._id)}
+                      onChange={() => toggleSelected(m._id)}
+                      aria-label={`Select ${m.name}`}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-medium text-slate-900">{m.name}</td>
                   <td className="px-4 py-3">{m.phone}</td>
                   <td className="px-4 py-3">{m.memberCategory || "—"}</td>

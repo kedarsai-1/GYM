@@ -32,6 +32,7 @@ router.put("/update/:id", (req, res, next) => {
 router.put("/diet/:id", memberController.updateDietPlan);
 router.put("/workout/:id", memberController.updateWorkoutPlan);
 router.delete("/delete/:id", memberController.deleteMember);
+router.post("/delete/bulk", memberController.bulkDeleteMembers);
 
 router.get("/:id", memberController.getMemberById);
 
