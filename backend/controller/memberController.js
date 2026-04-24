@@ -40,18 +40,29 @@ function resolveEndDate(body) {
 async function uploadImageToCloudinary(file, folder = "gym/members") {
   if (!file) return null;
   if (!isCloudinaryConfigured) {
+    console.warn(
+      `[Cloudinary] Skipping cloud upload for "${file.originalname}" because Cloudinary env vars are missing. Using local filename fallback.`
+    );
     return file.filename || null;
   }
-  const uploadRes = await cloudinary.uploader.upload(file.path, {
-    folder,
-    resource_type: "image",
-  });
   try {
-    await fs.promises.unlink(file.path);
-  } catch (_) {
-    // best effort cleanup
+    const uploadRes = await cloudinary.uploader.upload(file.path, {
+      folder,
+      resource_type: "image",
+    });
+    try {
+      await fs.promises.unlink(file.path);
+    } catch (_) {
+      // best effort cleanup
+    }
+    return uploadRes.secure_url;
+  } catch (error) {
+    console.error(
+      `[Cloudinary] Upload failed for "${file.originalname}" in folder "${folder}":`,
+      error?.message || error
+    );
+    throw new Error("Cloudinary upload failed");
   }
-  return uploadRes.secure_url;
 }
 
 function normalizePhone(v) {
@@ -341,7 +352,7 @@ exports.updateMember = async (req, res) => {
       updateQuery.$unset = { preferredTimeFraction: 1 };
     }
 
-    await Member.findByIdAndUpdate(req.params.id, updateQuery, { new: true });
+    await Member.findByIdAndUpdate(req.params.id, updateQuery, { returnDocument: "after" });
     res.json("Member Updated");
   } catch (error) {
     res.status(500).json({ message: "Failed to update member", error: error.message });
@@ -386,7 +397,7 @@ exports.updateDietPlan = async (req, res) => {
           },
         },
       },
-      { new: true }
+      { returnDocument: "after" }
     );
     res.json({ message: "Diet plan updated" });
   } catch (error) {
@@ -410,7 +421,7 @@ exports.updateWorkoutPlan = async (req, res) => {
           },
         },
       },
-      { new: true }
+      { returnDocument: "after" }
     );
     res.json({ message: "Workout plan updated" });
   } catch (error) {

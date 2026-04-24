@@ -110,7 +110,7 @@ function EditMember() {
   const resolveImageUrl = (value) => {
     if (!value) return "";
     if (String(value).startsWith("http://") || String(value).startsWith("https://")) return value;
-    return `${uploadsBase}/uploads/members/${value}`;
+    return `${uploadsBase}/uploads/members/${encodeURIComponent(String(value))}`;
   };
 
   useEffect(() => {
@@ -338,7 +338,7 @@ function EditMember() {
                 <div className="grid gap-5 sm:grid-cols-3">
                   <div>
                     <p className="mb-2 text-sm font-medium text-slate-800">Profile photo</p>
-                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <div className="mb-2 flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
                       {displayPhoto ? (
                         <img
                           src={displayPhoto}
@@ -359,7 +359,7 @@ function EditMember() {
                   </div>
                   <div>
                     <p className="mb-2 text-sm font-medium text-slate-800">Before photo</p>
-                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <div className="mb-2 flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
                       {displayBeforePhoto ? (
                         <img
                           src={displayBeforePhoto}
@@ -380,7 +380,7 @@ function EditMember() {
                   </div>
                   <div>
                     <p className="mb-2 text-sm font-medium text-slate-800">After photo</p>
-                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    <div className="mb-2 flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
                       {displayAfterPhoto ? (
                         <img
                           src={displayAfterPhoto}

@@ -12,6 +12,10 @@ if (isCloudinaryConfigured) {
     api_key: apiKey,
     api_secret: apiSecret,
   });
+} else {
+  console.warn(
+    "[Cloudinary] Not fully configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+  );
 }
 
 module.exports = {

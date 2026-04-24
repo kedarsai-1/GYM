@@ -17,6 +17,7 @@ function Members() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
   const [brokenImageIds, setBrokenImageIds] = useState(new Set());
+  const [zoomImage, setZoomImage] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const formatDate = (value) => (value ? new Date(value).toDateString() : "-");
@@ -25,7 +26,7 @@ function Members() {
   const resolveImageUrl = (value) => {
     if (!value) return "";
     if (String(value).startsWith("http://") || String(value).startsWith("https://")) return value;
-    return `${uploadsBase}/uploads/members/${value}`;
+    return `${uploadsBase}/uploads/members/${encodeURIComponent(String(value))}`;
   };
   const pageSize = 8;
   const filter = new URLSearchParams(location.search).get("filter");
@@ -352,7 +353,12 @@ function Members() {
 
             <div className="mt-4">
               {getMemberImage(selectedMember) ? (
-                <div className="flex h-64 w-full items-center justify-center rounded-xl bg-slate-100 p-2">
+                <button
+                  type="button"
+                  onClick={() => setZoomImage({ src: getMemberImage(selectedMember), label: "Profile photo" })}
+                  className="flex h-72 w-full items-center justify-center rounded-xl bg-slate-100 p-2 hover:bg-slate-200/60"
+                  title="Click to view larger"
+                >
                   <img
                     src={getMemberImage(selectedMember)}
                     alt={selectedMember.name}
@@ -361,7 +367,7 @@ function Members() {
                     }}
                     className="h-full w-full rounded-lg object-contain"
                   />
-                </div>
+                </button>
               ) : (
                 <div className="flex h-48 w-full items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-500">
                   No image uploaded
@@ -372,13 +378,20 @@ function Members() {
               <div className="rounded-xl bg-slate-100 p-2">
                 <p className="mb-1 text-xs font-semibold text-slate-600">Before</p>
                 {getBeforeImage(selectedMember) ? (
-                  <img
-                    src={getBeforeImage(selectedMember)}
-                    alt="Before progress"
-                    className="h-36 w-full rounded-lg object-contain"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage({ src: getBeforeImage(selectedMember), label: "Before photo" })}
+                    className="w-full rounded-lg bg-white p-1 hover:bg-slate-50"
+                    title="Click to view larger"
+                  >
+                    <img
+                      src={getBeforeImage(selectedMember)}
+                      alt="Before progress"
+                      className="h-56 w-full rounded-lg object-contain"
+                    />
+                  </button>
                 ) : (
-                  <div className="flex h-36 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
+                  <div className="flex h-56 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
                     No before image
                   </div>
                 )}
@@ -386,13 +399,20 @@ function Members() {
               <div className="rounded-xl bg-slate-100 p-2">
                 <p className="mb-1 text-xs font-semibold text-slate-600">After</p>
                 {getAfterImage(selectedMember) ? (
-                  <img
-                    src={getAfterImage(selectedMember)}
-                    alt="After progress"
-                    className="h-36 w-full rounded-lg object-contain"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage({ src: getAfterImage(selectedMember), label: "After photo" })}
+                    className="w-full rounded-lg bg-white p-1 hover:bg-slate-50"
+                    title="Click to view larger"
+                  >
+                    <img
+                      src={getAfterImage(selectedMember)}
+                      alt="After progress"
+                      className="h-56 w-full rounded-lg object-contain"
+                    />
+                  </button>
                 ) : (
-                  <div className="flex h-36 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
+                  <div className="flex h-56 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
                     No after image
                   </div>
                 )}
@@ -424,6 +444,28 @@ function Members() {
               <p><span className="font-semibold text-slate-800">Remarks:</span> {selectedMember.remarks || "-"}</p>
             </div>
           </motion.div>
+        </motion.div>
+      )}
+      {zoomImage && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <div className="fixed inset-0 z-[70] bg-black/70" onClick={() => setZoomImage(null)} />
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <div className="w-full max-w-4xl rounded-2xl bg-white p-3 shadow-2xl">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-700">{zoomImage.label}</p>
+                <button
+                  type="button"
+                  onClick={() => setZoomImage(null)}
+                  className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700 hover:bg-slate-200"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="flex max-h-[78vh] min-h-[42vh] items-center justify-center rounded-xl bg-slate-100 p-2">
+                <img src={zoomImage.src} alt={zoomImage.label} className="max-h-[75vh] w-full object-contain" />
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
       </AnimatePresence>
