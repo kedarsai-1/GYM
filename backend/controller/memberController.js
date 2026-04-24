@@ -2,6 +2,8 @@ const Member = require("../models/Member");
 const XLSX = require("xlsx");
 const { addMonths } = require("../utils/memberDates");
 const { buildMemberFromImportRow } = require("../utils/importMember");
+const { cloudinary, isCloudinaryConfigured } = require("../config/cloudinary");
+const fs = require("fs");
 
 function parseNum(v) {
   if (v === undefined || v === null || v === "") return undefined;
@@ -33,6 +35,23 @@ function resolveEndDate(body) {
     return addMonths(start, tenure);
   }
   return undefined;
+}
+
+async function uploadImageToCloudinary(file, folder = "gym/members") {
+  if (!file) return null;
+  if (!isCloudinaryConfigured) {
+    return file.filename || null;
+  }
+  const uploadRes = await cloudinary.uploader.upload(file.path, {
+    folder,
+    resource_type: "image",
+  });
+  try {
+    await fs.promises.unlink(file.path);
+  } catch (_) {
+    // best effort cleanup
+  }
+  return uploadRes.secure_url;
 }
 
 function normalizePhone(v) {
@@ -86,6 +105,10 @@ exports.addMember = async (req, res) => {
     const pendingBalance = parseNum(req.body.pendingBalance) ?? 0;
     const preferredTimeFraction = parseNum(req.body.preferredTimeFraction);
 
+    const memberImage = await uploadImageToCloudinary(files.memberImage?.[0], "gym/members/profile");
+    const beforeImage = await uploadImageToCloudinary(files.beforeImage?.[0], "gym/members/before");
+    const afterImage = await uploadImageToCloudinary(files.afterImage?.[0], "gym/members/after");
+
     const member = new Member({
       name: req.body.name,
       age: req.body.age,
@@ -114,9 +137,9 @@ exports.addMember = async (req, res) => {
         plan: req.body.plan,
       },
 
-      memberImage: files.memberImage ? files.memberImage[0].filename : null,
-      beforeImage: files.beforeImage ? files.beforeImage[0].filename : null,
-      afterImage: files.afterImage ? files.afterImage[0].filename : null,
+      memberImage,
+      beforeImage,
+      afterImage,
 
       payment: {
         type: normalizePaymentType(req.body.paymentType),
@@ -295,13 +318,22 @@ exports.updateMember = async (req, res) => {
 
     const files = req.files || {};
     if (files.memberImage && files.memberImage[0]) {
-      updateData.memberImage = files.memberImage[0].filename;
+      updateData.memberImage = await uploadImageToCloudinary(
+        files.memberImage[0],
+        "gym/members/profile"
+      );
     }
     if (files.beforeImage && files.beforeImage[0]) {
-      updateData.beforeImage = files.beforeImage[0].filename;
+      updateData.beforeImage = await uploadImageToCloudinary(
+        files.beforeImage[0],
+        "gym/members/before"
+      );
     }
     if (files.afterImage && files.afterImage[0]) {
-      updateData.afterImage = files.afterImage[0].filename;
+      updateData.afterImage = await uploadImageToCloudinary(
+        files.afterImage[0],
+        "gym/members/after"
+      );
     }
 
     const updateQuery = { $set: updateData };

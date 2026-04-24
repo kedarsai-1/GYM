@@ -107,6 +107,11 @@ function EditMember() {
 
   const apiBase = process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api";
   const uploadsBase = apiBase.replace("/api", "");
+  const resolveImageUrl = (value) => {
+    if (!value) return "";
+    if (String(value).startsWith("http://") || String(value).startsWith("https://")) return value;
+    return `${uploadsBase}/uploads/members/${value}`;
+  };
 
   useEffect(() => {
     API.get(`/members/${id}`).then((res) => {
@@ -148,15 +153,9 @@ function EditMember() {
         remarks: member.remarks || "",
       });
       setPreferredTime(fractionToTimeString(member.preferredTimeFraction));
-      setExistingImageUrl(
-        member.memberImage ? `${uploadsBase}/uploads/members/${member.memberImage}` : ""
-      );
-      setExistingBeforeImageUrl(
-        member.beforeImage ? `${uploadsBase}/uploads/members/${member.beforeImage}` : ""
-      );
-      setExistingAfterImageUrl(
-        member.afterImage ? `${uploadsBase}/uploads/members/${member.afterImage}` : ""
-      );
+      setExistingImageUrl(resolveImageUrl(member.memberImage));
+      setExistingBeforeImageUrl(resolveImageUrl(member.beforeImage));
+      setExistingAfterImageUrl(resolveImageUrl(member.afterImage));
       setMemberImageFile(null);
       setBeforeImageFile(null);
       setAfterImageFile(null);

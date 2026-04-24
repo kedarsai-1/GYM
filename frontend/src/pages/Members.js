@@ -22,6 +22,11 @@ function Members() {
   const formatDate = (value) => (value ? new Date(value).toDateString() : "-");
   const apiBase = process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api";
   const uploadsBase = apiBase.replace("/api", "");
+  const resolveImageUrl = (value) => {
+    if (!value) return "";
+    if (String(value).startsWith("http://") || String(value).startsWith("https://")) return value;
+    return `${uploadsBase}/uploads/members/${value}`;
+  };
   const pageSize = 8;
   const filter = new URLSearchParams(location.search).get("filter");
   const isExpiringFilter = filter === "expiring";
@@ -117,12 +122,10 @@ function Members() {
   const getMemberImage = (member) => {
     if (!member?.memberImage) return "";
     if (brokenImageIds.has(member._id)) return "";
-    return `${uploadsBase}/uploads/members/${member.memberImage}`;
+    return resolveImageUrl(member.memberImage);
   };
-  const getBeforeImage = (member) =>
-    member?.beforeImage ? `${uploadsBase}/uploads/members/${member.beforeImage}` : "";
-  const getAfterImage = (member) =>
-    member?.afterImage ? `${uploadsBase}/uploads/members/${member.afterImage}` : "";
+  const getBeforeImage = (member) => resolveImageUrl(member?.beforeImage);
+  const getAfterImage = (member) => resolveImageUrl(member?.afterImage);
 
   return (
     <div className="flex">
