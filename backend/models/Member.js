@@ -32,6 +32,8 @@ const memberSchema = new mongoose.Schema({
   remarks: { type: String, default: "" },
 
   memberImage: String,
+  beforeImage: String,
+  afterImage: String,
 
   membership: {
     startDate: Date,

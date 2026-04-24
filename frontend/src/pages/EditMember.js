@@ -96,8 +96,14 @@ function EditMember() {
   const [autoEndFromTenure, setAutoEndFromTenure] = useState(true);
   const [error, setError] = useState("");
   const [memberImageFile, setMemberImageFile] = useState(null);
+  const [beforeImageFile, setBeforeImageFile] = useState(null);
+  const [afterImageFile, setAfterImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [beforePreviewUrl, setBeforePreviewUrl] = useState(null);
+  const [afterPreviewUrl, setAfterPreviewUrl] = useState(null);
   const [existingImageUrl, setExistingImageUrl] = useState("");
+  const [existingBeforeImageUrl, setExistingBeforeImageUrl] = useState("");
+  const [existingAfterImageUrl, setExistingAfterImageUrl] = useState("");
 
   const apiBase = process.env.REACT_APP_API_BASE_URL || "https://gym-cf62.onrender.com/api";
   const uploadsBase = apiBase.replace("/api", "");
@@ -145,16 +151,28 @@ function EditMember() {
       setExistingImageUrl(
         member.memberImage ? `${uploadsBase}/uploads/members/${member.memberImage}` : ""
       );
+      setExistingBeforeImageUrl(
+        member.beforeImage ? `${uploadsBase}/uploads/members/${member.beforeImage}` : ""
+      );
+      setExistingAfterImageUrl(
+        member.afterImage ? `${uploadsBase}/uploads/members/${member.afterImage}` : ""
+      );
       setMemberImageFile(null);
+      setBeforeImageFile(null);
+      setAfterImageFile(null);
       setPreviewUrl(null);
+      setBeforePreviewUrl(null);
+      setAfterPreviewUrl(null);
     });
   }, [id, uploadsBase]);
 
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (beforePreviewUrl) URL.revokeObjectURL(beforePreviewUrl);
+      if (afterPreviewUrl) URL.revokeObjectURL(afterPreviewUrl);
     };
-  }, [previewUrl]);
+  }, [previewUrl, beforePreviewUrl, afterPreviewUrl]);
 
   useEffect(() => {
     if (!autoEndFromTenure) return;
@@ -181,6 +199,20 @@ function EditMember() {
     setPreviewUrl(file ? URL.createObjectURL(file) : null);
   };
 
+  const handleBeforeImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (beforePreviewUrl) URL.revokeObjectURL(beforePreviewUrl);
+    setBeforeImageFile(file || null);
+    setBeforePreviewUrl(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleAfterImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (afterPreviewUrl) URL.revokeObjectURL(afterPreviewUrl);
+    setAfterImageFile(file || null);
+    setAfterPreviewUrl(file ? URL.createObjectURL(file) : null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (Number(form.age) < 0) {
@@ -198,6 +230,8 @@ function EditMember() {
     else fd.append("preferredTimeFraction", "");
 
     if (memberImageFile) fd.append("memberImage", memberImageFile);
+    if (beforeImageFile) fd.append("beforeImage", beforeImageFile);
+    if (afterImageFile) fd.append("afterImage", afterImageFile);
 
     try {
       await API.put(`/members/update/${id}`, fd);
@@ -210,6 +244,8 @@ function EditMember() {
   };
 
   const displayPhoto = previewUrl || existingImageUrl;
+  const displayBeforePhoto = beforePreviewUrl || existingBeforeImageUrl;
+  const displayAfterPhoto = afterPreviewUrl || existingAfterImageUrl;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-orange-50/40 to-slate-100">
@@ -297,33 +333,77 @@ function EditMember() {
 
               <SectionCard
                 icon={FaCamera}
-                title="Profile photo"
-                subtitle="Replace the member photo only when needed."
+                title="Photos"
+                subtitle="Profile and progress photos (before / after)."
               >
-                <div className="flex flex-wrap items-start gap-4">
-                  <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
-                    {displayPhoto ? (
-                      <img
-                        src={displayPhoto}
-                        alt="Member"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <span className="px-2 text-center text-xs text-slate-400">No photo</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
+                <div className="grid gap-5 sm:grid-cols-3">
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-slate-800">Profile photo</p>
+                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                      {displayPhoto ? (
+                        <img
+                          src={displayPhoto}
+                          alt="Profile"
+                          onError={() => setExistingImageUrl("")}
+                          className="h-full w-full object-contain"
+                        />
+                      ) : (
+                        <span className="px-2 text-center text-xs text-slate-400">No photo</span>
+                      )}
+                    </div>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-900 hover:file:bg-orange-200"
                     />
-                    <p className="mt-2 text-xs text-slate-500">
-                      Choose a new image to replace the current one. Leave unchanged to keep the existing photo.
-                    </p>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-slate-800">Before photo</p>
+                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                      {displayBeforePhoto ? (
+                        <img
+                          src={displayBeforePhoto}
+                          alt="Before"
+                          onError={() => setExistingBeforeImageUrl("")}
+                          className="h-full w-full object-contain"
+                        />
+                      ) : (
+                        <span className="px-2 text-center text-xs text-slate-400">No before image</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBeforeImageChange}
+                      className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-900 hover:file:bg-orange-200"
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-2 text-sm font-medium text-slate-800">After photo</p>
+                    <div className="mb-2 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                      {displayAfterPhoto ? (
+                        <img
+                          src={displayAfterPhoto}
+                          alt="After"
+                          onError={() => setExistingAfterImageUrl("")}
+                          className="h-full w-full object-contain"
+                        />
+                      ) : (
+                        <span className="px-2 text-center text-xs text-slate-400">No after image</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAfterImageChange}
+                      className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-orange-900 hover:file:bg-orange-200"
+                    />
                   </div>
                 </div>
+                <p className="mt-3 text-xs text-slate-500">
+                  Leave any field unchanged to keep existing images.
+                </p>
               </SectionCard>
 
               <SectionCard

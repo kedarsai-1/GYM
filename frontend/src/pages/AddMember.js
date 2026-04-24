@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../services/api";
@@ -62,6 +63,7 @@ function SectionCard({ icon: Icon, title, subtitle, children }) {
 }
 
 function AddMember() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({});
   const [paymentType, setPaymentType] = useState("Cash");
   const [preferredTime, setPreferredTime] = useState("");
@@ -123,9 +125,14 @@ function AddMember() {
     try {
       await API.post("/members/add", data);
       setError("");
-      alert("Member added successfully.");
+      alert("Member saved successfully.");
+      navigate("/members");
     } catch (err) {
-      setError(err.response?.data?.message || "Could not save. Please try again.");
+      const msg =
+        err.response?.data?.message ||
+        (err.response?.status === 409 ? "Member already exists" : null) ||
+        "Could not save. Please try again.";
+      setError(msg);
     }
   };
 
@@ -187,15 +194,37 @@ function AddMember() {
               <SectionCard
                 icon={FaCamera}
                 title="Photo (optional)"
-                subtitle="A clear face photo for their profile card or app."
+                subtitle="Profile photo and progress photos (before / after)."
               >
-                <input
-                  type="file"
-                  name="memberImage"
-                  accept="image/*"
-                  onChange={handleFile}
-                  className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-900 hover:file:bg-orange-200"
-                />
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Field label="Profile photo">
+                    <input
+                      type="file"
+                      name="memberImage"
+                      accept="image/*"
+                      onChange={handleFile}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-900 hover:file:bg-orange-200"
+                    />
+                  </Field>
+                  <Field label="Before photo" hint="At joining time.">
+                    <input
+                      type="file"
+                      name="beforeImage"
+                      accept="image/*"
+                      onChange={handleFile}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-900 hover:file:bg-orange-200"
+                    />
+                  </Field>
+                  <Field label="After photo" hint="Latest progress photo.">
+                    <input
+                      type="file"
+                      name="afterImage"
+                      accept="image/*"
+                      onChange={handleFile}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-900 hover:file:bg-orange-200"
+                    />
+                  </Field>
+                </div>
               </SectionCard>
 
               <SectionCard

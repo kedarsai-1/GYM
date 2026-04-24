@@ -10,7 +10,11 @@ const ensureDir = (dir) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (file.fieldname === "memberImage") {
+    if (
+      file.fieldname === "memberImage" ||
+      file.fieldname === "beforeImage" ||
+      file.fieldname === "afterImage"
+    ) {
       const memberDir = path.join("uploads", "members");
       ensureDir(memberDir);
       cb(null, memberDir);

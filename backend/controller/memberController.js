@@ -115,6 +115,8 @@ exports.addMember = async (req, res) => {
       },
 
       memberImage: files.memberImage ? files.memberImage[0].filename : null,
+      beforeImage: files.beforeImage ? files.beforeImage[0].filename : null,
+      afterImage: files.afterImage ? files.afterImage[0].filename : null,
 
       payment: {
         type: normalizePaymentType(req.body.paymentType),
@@ -294,6 +296,12 @@ exports.updateMember = async (req, res) => {
     const files = req.files || {};
     if (files.memberImage && files.memberImage[0]) {
       updateData.memberImage = files.memberImage[0].filename;
+    }
+    if (files.beforeImage && files.beforeImage[0]) {
+      updateData.beforeImage = files.beforeImage[0].filename;
+    }
+    if (files.afterImage && files.afterImage[0]) {
+      updateData.afterImage = files.afterImage[0].filename;
     }
 
     const updateQuery = { $set: updateData };

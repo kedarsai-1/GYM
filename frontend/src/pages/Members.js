@@ -16,6 +16,7 @@ function Members() {
   const [page, setPage] = useState(1);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [brokenImageIds, setBrokenImageIds] = useState(new Set());
   const navigate = useNavigate();
   const location = useLocation();
   const formatDate = (value) => (value ? new Date(value).toDateString() : "-");
@@ -115,8 +116,13 @@ function Members() {
 
   const getMemberImage = (member) => {
     if (!member?.memberImage) return "";
+    if (brokenImageIds.has(member._id)) return "";
     return `${uploadsBase}/uploads/members/${member.memberImage}`;
   };
+  const getBeforeImage = (member) =>
+    member?.beforeImage ? `${uploadsBase}/uploads/members/${member.beforeImage}` : "";
+  const getAfterImage = (member) =>
+    member?.afterImage ? `${uploadsBase}/uploads/members/${member.afterImage}` : "";
 
   return (
     <div className="flex">
@@ -347,6 +353,9 @@ function Members() {
                   <img
                     src={getMemberImage(selectedMember)}
                     alt={selectedMember.name}
+                    onError={() => {
+                      setBrokenImageIds((prev) => new Set(prev).add(selectedMember._id));
+                    }}
                     className="h-full w-full rounded-lg object-contain"
                   />
                 </div>
@@ -355,6 +364,36 @@ function Members() {
                   No image uploaded
                 </div>
               )}
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-slate-100 p-2">
+                <p className="mb-1 text-xs font-semibold text-slate-600">Before</p>
+                {getBeforeImage(selectedMember) ? (
+                  <img
+                    src={getBeforeImage(selectedMember)}
+                    alt="Before progress"
+                    className="h-36 w-full rounded-lg object-contain"
+                  />
+                ) : (
+                  <div className="flex h-36 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
+                    No before image
+                  </div>
+                )}
+              </div>
+              <div className="rounded-xl bg-slate-100 p-2">
+                <p className="mb-1 text-xs font-semibold text-slate-600">After</p>
+                {getAfterImage(selectedMember) ? (
+                  <img
+                    src={getAfterImage(selectedMember)}
+                    alt="After progress"
+                    className="h-36 w-full rounded-lg object-contain"
+                  />
+                ) : (
+                  <div className="flex h-36 items-center justify-center rounded-lg bg-white text-xs text-slate-500">
+                    No after image
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="mt-5 space-y-3 text-sm">

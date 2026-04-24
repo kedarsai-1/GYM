@@ -7,6 +7,8 @@ router.post(
   "/add",
   upload.fields([
     { name: "memberImage", maxCount: 1 },
+    { name: "beforeImage", maxCount: 1 },
+    { name: "afterImage", maxCount: 1 },
     { name: "upiScreenshot", maxCount: 1 },
   ]),
   memberController.addMember
@@ -24,7 +26,11 @@ router.get("/expiring/list", memberController.expiringMembers);
 router.put("/update/:id", (req, res, next) => {
   const ct = req.headers["content-type"] || "";
   if (ct.includes("multipart/form-data")) {
-    return upload.fields([{ name: "memberImage", maxCount: 1 }])(req, res, next);
+    return upload.fields([
+      { name: "memberImage", maxCount: 1 },
+      { name: "beforeImage", maxCount: 1 },
+      { name: "afterImage", maxCount: 1 },
+    ])(req, res, next);
   }
   next();
 }, memberController.updateMember);
